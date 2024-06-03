@@ -1,0 +1,4 @@
+position,dept,year,_id,name,email,class
+學生,太空系      ,4,b19303008,"劉海王 (LIU, NEPTUNE)",b19303008@ntu.edu.tw,資料庫系統-從SQL到NoSQL (EE5178)
+學生,太空所      ,2,b19303129,"吳火箭 (WU, ROCKET)",r19303129@ntu.edu.tw,資料庫系統-從SQL到NoSQL (EE5178)
+學生,太空所      ,1,r09303019,"黃人馬 (HUANG, CENTAURUS)",r09303019@ntu.edu.tw,資料庫系統-從SQL到NoSQL (EE5178)

@@ -1,0 +1,54 @@
+Task1:
+LOAD CSV WITH HEADERS FROM 'file:///Hw6_file/studentE.csv' AS row
+CREATE (s:Student {
+    id: row._id,
+    position: row.position, 
+    dept: row.dept,
+    year: toInteger(row.year),
+    name: row.name, 
+    email: row.email,
+    class: row.class
+});
+
+Task2:
+LOAD CSV WITH HEADERS FROM 'file:///Hw6_file/student_groupE.csv' AS row
+MERGE (g:Group {id: row.group}) // Ensure each group is created uniquely
+WITH row, g
+MATCH (s:Student {id: row._id}) // Find the student node that matches the student _id
+MERGE (s)-[:BELONGS_TO]->(g) // Create a relationship from the student to the group
+RETURN s, g;
+
+
+Task3:
+MATCH (you:Student)-[:BELONGS_TO]->(g:Group)<-[:BELONGS_TO]-(groupMate:Student)
+WHERE you.name =~ '^許致銓.*'
+RETURN you.name AS YourName, collect(groupMate.name) AS GroupPartners;
+
+Task4:
+MATCH (s:Student)
+MERGE (d:Department {name: coalesce(s.dept, 'NA')})
+MERGE (s)-[:ENROLLED_IN]->(d)
+RETURN s, d;
+
+Task5:
+MATCH (s:Student)
+WHERE s.position = '學生' AND (s.position <> '旁聽生' OR s.position IS NULL)
+WITH s.dept AS Department, coalesce(s.name, 'NA') AS StudentName
+RETURN Department, count(StudentName) AS NumberOfStudents
+ORDER BY NumberOfStudents DESC
+LIMIT 10;
+
+Task6:
+MATCH (g:Group)<-[:BELONGS_TO]-(s:Student)-[:ENROLLED_IN]->(d:Department)
+WITH g, count(DISTINCT d.name) AS deptCount, collect(DISTINCT d.name) AS deptNames
+ORDER BY deptCount DESC, g.id ASC
+RETURN g.id AS GroupNumber, deptNames, deptCount
+LIMIT 5;
+
+Task7:
+MATCH (you:Student {dept: '森林環資所'})-[:BELONGS_TO]->(group:Group)<-[:BELONGS_TO]-(partner:Student)
+MATCH (partner)-[:ENROLLED_IN]->(dept:Department)
+MATCH (student:Student)-[:ENROLLED_IN]->(dept)
+WITH partner.name AS partner_name, dept.name AS dept_name, count(student) AS dept_size
+RETURN partner_name, dept_name, dept_size
+ORDER BY partner_name, dept_name;

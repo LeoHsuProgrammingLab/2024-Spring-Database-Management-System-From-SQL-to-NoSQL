@@ -1,0 +1,76 @@
+Task1: 
+mongoimport --type=csv --db=hw6 --collection=students --headerline --file='Hw6_file/studentE.csv',
+use hw6
+db.students.findOne({ name: { $regex: /^許致銓/i } });
+
+Task2:
+db.students.aggregate([
+    { $match: { position: "學生" } },  // Adjust the field and value according to your data schema
+    { $group: {
+        _id: "$dept",  // Group by the 'dept' field
+        numberOfStudents: { $sum: 1 }  // Count the number of students in each group
+    }},
+    { $sort: { numberOfStudents: -1 } },  // Sort the groups by 'numberOfStudents' descending
+    { $limit: 10 }  // Limit to top 10
+]);
+
+Task3:
+db.students.updateMany(
+    {},  // Filter: empty means apply to all documents
+    { $set: { updated: ISODate("2024-05-23") } }  // Action: set the 'updated' field
+);
+
+Task4:
+db.students.updateMany(
+    { dept: {$regex: /^太空|森林/i } }, // Match the new students
+    { $set: { updated: ISODate("2024-06-01") } }
+);
+
+Task5:
+db.students.aggregate([
+    { $match: {
+        updated: {
+            $gte: ISODate("2024-01-01T00:00:00.000Z"),
+            $lte: ISODate("2024-05-31T23:59:59.999Z")
+        }
+    }},
+    { $group: {
+        _id: "$dept",
+        count: { $sum: 1 }
+    }},
+    { $out: "tally" }
+]);
+db.tally.find();
+db.students.aggregate([
+    { $match: {
+        updated: {
+            $gte: ISODate("2024-06-01T00:00:00.000Z"),
+            $lte: ISODate("2024-06-30T23:59:59.999Z")
+        }
+    }},
+    { $group: {
+        _id: "$dept",
+        count: { $sum: 1 }
+    }},
+    { $merge: {
+        into: "tally",
+        on: "_id",
+        whenMatched: "replace",
+        whenNotMatched: "insert"
+    }}
+]);
+db.tally.find();
+
+Task6:
+mongoimport --type=csv --db=hw6 --collection=students --headerline --file='Hw6_file/student_groupE.csv' --mode=merge --upsertFields _id;
+
+Task7:
+db.students.aggregate([
+    { $match: { "group": { $exists: true, $ne: null } } }, // Filters out documents without a group number
+    {
+        $group: {
+            _id: "$group", // Group by group number
+            members: { $push: "$name" } // Collects all member names into an array
+        }
+    }
+]);
