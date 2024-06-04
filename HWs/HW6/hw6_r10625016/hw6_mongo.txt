@@ -21,6 +21,7 @@ db.students.updateMany(
 );
 
 Task4:
+mongoimport --type=csv --db=hw6 --collection=students --headerline --file='Hw6_file/new_studentE.csv',
 db.students.updateMany(
     { dept: {$regex: /^太空|森林/i } }, // Match the new students
     { $set: { updated: ISODate("2024-06-01") } }
@@ -52,12 +53,7 @@ db.students.aggregate([
         _id: "$dept",
         count: { $sum: 1 }
     }},
-    { $merge: {
-        into: "tally",
-        on: "_id",
-        whenMatched: "replace",
-        whenNotMatched: "insert"
-    }}
+    { $out: "tally" }
 ]);
 db.tally.find();
 
